@@ -1,0 +1,66 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.5.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.jfrog.buildinfo:build-info-extractor-gradle:4.1.1")
+	}
+}
+
+apply plugin: "com.jfrog.artifactory"
+apply plugin: 'maven-publish'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile("org.springframework.boot:spring-boot-starter-web")
+	compile('org.springframework.boot:spring-boot-starter-security')
+	compile('org.springframework.security.oauth:spring-security-oauth2:2.0.8.RELEASE')
+	compile('io.springfox:springfox-swagger2:2.4.0')
+	compile('io.springfox:springfox-swagger-ui:2.4.0')
+	testCompile(
+			'org.springframework.boot:spring-boot-starter-test',
+			'com.jayway.jsonpath:json-path:2.1.0',
+			'org.assertj:assertj-core:3.2.0',
+			'org.powermock:powermock-api-mockito:1.6.4',
+			'org.powermock:powermock-module-junit4:1.6.4',
+			'junit:junit:4.12'
+	)
+}
+
+tasks.withType(Test) {
+	systemProperty 'spring.profiles.active', 'test'
+
+	testLogging {
+		exceptionFormat 'full'
+	}
+
+	afterTest { desc, result ->
+		println "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+	}
+
+	afterSuite { desc, result ->
+		if (!desc.parent) {
+			println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+		}
+	}
+}
+
+bootRun {
+	systemProperty 'spring.profiles.active', 'local'
+}
